@@ -110,14 +110,36 @@ pane_full_command() {
 	$strategy_file "$pane_pid"
 }
 
+number_nonempty_lines_on_screen() {
+	local pane_id="$1"
+	tmux capture-pane -pJ -t "$pane_id" |
+		sed '/^$/d' |
+		wc -l |
+		sed 's/ //g'
+}
+
+# tests if there was any command output in the current pane
+pane_has_any_content() {
+	local pane_id="$1"
+	local history_size="$(tmux display -p -t "$pane_id" -F "#{history_size}")"
+	local cursor_y="$(tmux display -p -t "$pane_id" -F "#{cursor_y}")"
+	# doing "cheap" tests first
+	[ "$history_size" -gt 0 ] || # history has any content?
+		[ "$cursor_y" -gt 0 ] || # cursor not in first line?
+		[ "$(number_nonempty_lines_on_screen "$pane_id")" -gt 1 ]
+}
+
 capture_pane_contents() {
 	local pane_id="$1"
 	local start_line="-$2"
 	local pane_contents_area="$3"
-	if [ "$pane_contents_area" = "visible" ]; then
-		start_line="0"
+	if pane_has_any_content "$pane_id"; then
+		if [ "$pane_contents_area" = "visible" ]; then
+			start_line="0"
+		fi
+		# the printf hack below removes *trailing* empty lines
+		printf '%s\n' "$(tmux capture-pane -epJ -S "$start_line" -t "$pane_id")" > "$(pane_contents_file "$pane_id")"
 	fi
-	tmux capture-pane -epJ -S "$start_line" -t "$pane_id" > "$(resurrect_pane_file "$pane_id")"
 }
 
 save_shell_history() {
@@ -202,6 +224,8 @@ dump_windows() {
 				toggle_window_zoom "${session_name}:${window_index}"
 				# get correct window layout
 				window_layout="$(tmux display-message -p -t "${session_name}:${window_index}" -F "#{window_layout}")"
+				# sleep required otherwise vim does not redraw correctly, issue #112
+				sleep 0.1 || sleep 1 # portability hack
 				# maximize window again
 				toggle_window_zoom "${session_name}:${window_index}"
 			fi
@@ -237,7 +261,10 @@ save_all() {
 	dump_state   >> "$resurrect_file_path"
 	ln -fs "$(basename "$resurrect_file_path")" "$(last_resurrect_file)"
 	if capture_pane_contents_option_on; then
+		mkdir -p "$(pane_contents_dir)"
 		dump_pane_contents
+		pane_contents_create_archive
+		pane_content_files_cleanup
 	fi
 	if save_bash_history_option_on; then
 		dump_bash_history
