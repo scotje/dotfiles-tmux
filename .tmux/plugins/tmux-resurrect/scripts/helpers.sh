@@ -71,10 +71,30 @@ is_session_grouped() {
 	[[ "$GROUPED_SESSIONS" == *"${d}${session_name}${d}"* ]]
 }
 
+# pane content file helpers
+
+pane_contents_create_archive() {
+	tar cf - -C "$(resurrect_dir)" ./pane_contents/ |
+		gzip > "$(pane_contents_archive_file)"
+}
+
+pane_content_files_restore_from_archive() {
+	local archive_file="$(pane_contents_archive_file)"
+	if [ -f "$archive_file" ]; then
+		gzip -d < "$archive_file" |
+			tar xf - -C "$(resurrect_dir)"
+	fi
+}
+
+pane_content_files_cleanup() {
+	rm "$(pane_contents_dir)"/*
+}
+
 # path helpers
 
 resurrect_dir() {
-	echo $(get_tmux_option "$resurrect_dir_option" "$default_resurrect_dir")
+	local path="$(get_tmux_option "$resurrect_dir_option" "$default_resurrect_dir")"
+	echo "${path/#\~/$HOME}" # expands tilde if used with @resurrect-dir
 }
 
 resurrect_file_path() {
@@ -86,9 +106,22 @@ last_resurrect_file() {
 	echo "$(resurrect_dir)/last"
 }
 
-resurrect_pane_file() {
+pane_contents_dir() {
+	echo "$(resurrect_dir)/pane_contents/"
+}
+
+pane_contents_file() {
 	local pane_id="$1"
-	echo "$(resurrect_dir)/pane_contents-${pane_id}"
+	echo "$(pane_contents_dir)/pane-${pane_id}"
+}
+
+pane_contents_file_exists() {
+	local pane_id="$1"
+	[ -f "$(pane_contents_file "$pane_id")" ]
+}
+
+pane_contents_archive_file() {
+	echo "$(resurrect_dir)/pane_contents.tar.gz"
 }
 
 resurrect_history_file() {

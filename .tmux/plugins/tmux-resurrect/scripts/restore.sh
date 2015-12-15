@@ -108,7 +108,7 @@ tmux_default_command() {
 }
 
 pane_creation_command() {
-	echo "cat '$(resurrect_pane_file "${1}:${2}.${3}")'; exec $(tmux_default_command)"
+	echo "cat '$(pane_contents_file "${1}:${2}.${3}")'; exec $(tmux_default_command)"
 }
 
 new_window() {
@@ -117,7 +117,8 @@ new_window() {
 	local window_name="$3"
 	local dir="$4"
 	local pane_index="$5"
-	if is_restoring_pane_contents; then
+	local pane_id="${session_name}:${window_number}.${pane_index}"
+	if is_restoring_pane_contents && pane_contents_file_exists "$pane_id"; then
 		local pane_creation_command="$(pane_creation_command "$session_name" "$window_number" "$pane_index")"
 		tmux new-window -d -t "${session_name}:${window_number}" -n "$window_name" -c "$dir" "$pane_creation_command"
 	else
@@ -131,7 +132,8 @@ new_session() {
 	local window_name="$3"
 	local dir="$4"
 	local pane_index="$5"
-	if is_restoring_pane_contents; then
+	local pane_id="${session_name}:${window_number}.${pane_index}"
+	if is_restoring_pane_contents && pane_contents_file_exists "$pane_id"; then
 		local pane_creation_command="$(pane_creation_command "$session_name" "$window_number" "$pane_index")"
 		TMUX="" tmux -S "$(tmux_socket)" new-session -d -s "$session_name" -n "$window_name" -c "$dir" "$pane_creation_command"
 	else
@@ -150,7 +152,8 @@ new_pane() {
 	local window_name="$3"
 	local dir="$4"
 	local pane_index="$5"
-	if is_restoring_pane_contents; then
+	local pane_id="${session_name}:${window_number}.${pane_index}"
+	if is_restoring_pane_contents && pane_contents_file_exists "$pane_id"; then
 		local pane_creation_command="$(pane_creation_command "$session_name" "$window_number" "$pane_index")"
 		tmux split-window -t "${session_name}:${window_number}" -c "$dir" "$pane_creation_command"
 	else
@@ -247,11 +250,17 @@ detect_if_restoring_pane_contents() {
 restore_all_panes() {
 	detect_if_restoring_from_scratch   # sets a global variable
 	detect_if_restoring_pane_contents  # sets a global variable
+	if is_restoring_pane_contents; then
+		pane_content_files_restore_from_archive
+	fi
 	while read line; do
 		if is_line_type "pane" "$line"; then
 			restore_pane "$line"
 		fi
 	done < $(last_resurrect_file)
+	if is_restoring_pane_contents; then
+		pane_content_files_cleanup
+	fi
 }
 
 restore_pane_layout_for_each_window() {

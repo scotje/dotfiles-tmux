@@ -8,6 +8,15 @@
   content history
 - refactoring: drop dependency on `paste` command
 - bugfix for pane contents restoration
+- expand tilde char `~` if used with `@resurrect-dir`
+- do not save empty trailing lines when pane content is saved
+- do not save pane contents if pane is empty (only for 'save pane contents'
+  feature)
+- "save pane contents" feature saves files to a separate directory
+- archive and compress pane contents file
+- make archive & compress pane contents process more portable
+- `mutt` added to the list of automatically restored programs
+- added guide for migrating from tmuxinator
 
 ### v2.4.0, 2015-02-23
 - add "tmux-test"
