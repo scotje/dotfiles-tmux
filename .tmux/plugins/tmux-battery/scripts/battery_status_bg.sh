@@ -22,13 +22,20 @@ get_charge_color_settings() {
 }
 
 print_battery_status_bg() {
+    # Get status and always use green if charging
+    local status=$(battery_status)
+	  if [[ $status =~ (^charging) ]]; then
+      printf $color_full_charge
+      return
+    fi
+
     # Call `battery_percentage.sh`.
     percentage=$($CURRENT_DIR/battery_percentage.sh | sed -e 's/%//')
-    if [ $percentage -eq 100 ]; then
+    if [ $percentage -ge 75 ]; then
         printf $color_full_charge
-    elif [ $percentage -le 99 -a $percentage -ge 51 ];then
+    elif [ $percentage -le 74 -a $percentage -ge 25 ];then
         printf $color_high_charge
-    elif [ $percentage -le 50 -a $percentage -ge 16 ];then
+    elif [ $percentage -le 24 -a $percentage -ge 10 ];then
         printf $color_medium_charge
     else
         printf $color_low_charge
@@ -36,7 +43,7 @@ print_battery_status_bg() {
 }
 
 main() {
-    get_charge_color_settings
+  get_charge_color_settings
 	print_battery_status_bg
 }
 main
