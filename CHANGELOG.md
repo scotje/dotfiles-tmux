@@ -17,6 +17,11 @@
 - make archive & compress pane contents process more portable
 - `mutt` added to the list of automatically restored programs
 - added guide for migrating from tmuxinator
+- fixed a bug for restoring commands on tmux 2.5 (and probably tmux 2.4)
+- do not create another resurrect file if there are no changes (credit @vburdo)
+- allow using '$HOSTNAME' in @resurrect-dir
+- add zsh history saving and restoring
+- delete resurrect files older than 30 days, but keep at least 5 files
 
 ### v2.4.0, 2015-02-23
 - add "tmux-test"
