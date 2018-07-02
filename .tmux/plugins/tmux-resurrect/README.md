@@ -1,6 +1,6 @@
 # Tmux Resurrect
 
-[![Build Status](https://travis-ci.org/tmux-plugins/tmux-resurrect.png?branch=master)](https://travis-ci.org/tmux-plugins/tmux-resurrect)
+[![Build Status](https://travis-ci.org/tmux-plugins/tmux-resurrect.svg?branch=master)](https://travis-ci.org/tmux-plugins/tmux-resurrect)
 
 Restore `tmux` environment after system restart.
 
@@ -49,7 +49,7 @@ Optional:
 
 - [restoring vim and neovim sessions](docs/restoring_vim_and_neovim_sessions.md)
 - [restoring pane contents](docs/restoring_pane_contents.md)
-- [restoring bash history](docs/restoring_bash_history.md) (experimental)
+- [restoring shell history](docs/restoring_shell_history.md) (experimental)
 
 Requirements / dependencies: `tmux 1.9` or higher, `bash`.
 
@@ -91,7 +91,7 @@ You should now be able to use the plugin.
 
 - [Changing the default key bindings](docs/custom_key_bindings.md).
 - Only a conservative list of programs is restored by default:<br/>
-  `vi vim nvim emacs man less more tail top htop irssi mutt`.<br/>
+  `vi vim nvim emacs man less more tail top htop irssi weechat mutt`.<br/>
   [Restoring programs doc](docs/restoring_programs.md) explains how to restore
   additional programs.
 - [Change a directory](docs/save_dir.md) where `tmux-resurrect` saves tmux
@@ -105,7 +105,7 @@ You should now be able to use the plugin.
 
 **Experimental features (also optional)**
 
-- [restoring bash history](docs/restoring_bash_history.md)
+- [restoring shell history](docs/restoring_shell_history.md)
 
 ### Other goodies
 
